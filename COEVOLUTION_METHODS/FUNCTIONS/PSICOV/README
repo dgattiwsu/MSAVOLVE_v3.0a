@@ -1,0 +1,88 @@
+USAGE NOTES FOR PSICOV V1.05
+
+(See LICENSE file for details on licensing terms)
+
+
+Compiling
+=========
+
+gfortran -O3 psicov.c glasso_psicov.f90 -lm -lgsl -lgslcblas -o psicov
+
+Requirements:
+
+1. GNU Scientific Library (gsl)
+2. glasso_psicov.f90 (glasso.f90 from CRAN package patched according to glasso.diffs)
+
+The glasso code should be obtainable from here:
+http://cran.r-project.org/web/packages/glasso/index.html
+
+
+Typical usage
+=============
+
+Set target precision matrix sparsity:
+
+psicov -d 0.03 demo.aln > output
+
+
+Outputting raw scores rather than estimated PPVs:
+
+psicov -k demo.aln > output
+
+
+Output contacts separated by 12 or more in the sequence:
+
+psicov -j 12 demo.aln > output
+
+
+Ignore alignment columns with > 30% gaps:
+
+psicov -g 0.3 demo.aln > output
+
+
+Recommended options for quicker results (quick enough for very large proteins):
+
+psicov -a -r 0.001 -i 62 demo.aln > output
+
+
+********************************************************************************************************
+
+Recommended options for slower but more accurate results (probably too slow for very large proteins):
+
+psicov -p -d 0.03 demo.aln > output
+
+These options select the glasso exact algorithm, target contact density of 3% and by default, corrects the
+the BLOSUM weighting cutoff for highly conserved or very divergent families. It also attempts to estimate
+PPV (precision) for each predicted contact rather than outputting arbitrary raw scores.
+
+********************************************************************************************************
+
+
+IMPORTANT NOTE
+==============
+
+Please note that a large number of _diverse_ homologous sequences are needed for contact prediction to succeed. In
+the original paper, the worst example had 511 homologous sequences and the best had 74836. If you try to calculate
+contacts with very few sequences, then at best the results will be poor, or at worst psicov will not be able to
+converge on a solution and keep running forever! In the latter case, convergence can be achieved by increasing the
+rho parameter to 0.005 or 0.01 say (default is 0.001) e.g. psicov -r 0.005 -i 62 demo.aln > output
+
+However, even if PSICOV does converge this will not necessarily produce good contact predictions - you cannot
+avoid the issue of needing a lot of sequence data to properly compute the pairwise correlations.
+
+PSICOV will give an error if an alignment with too few sequences is used, and will also print a warning if there is
+insufficient sequence variation. You can override these checks by modifying the code, but bear in mind that
+PSICOV can only work on VERY LARGE sequence families. If you only have a handful of sequences, or if the sequences
+are all very similar, then you simply do not have enough data to analyse. For best results you need a sequence
+alignment with >1000 sequences and a large amount of sequence variation between the sequences.
+
+
+
+
+Changelog
+=========
+
+1.00 - Initial release
+1.02 - Fixed "infinite loop" bug in iteration procedure
+1.04 - 1. Added sanity checking to iteration procedure 2. Made exact solution the default
+1.05 - Added sanity checks for sufficient homologous sequences in the alignment

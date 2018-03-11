@@ -1,0 +1,16 @@
+function [ rel_entropy_aa,rel_entropy ] = ...
+    rel_entropy_nmsa( nmsa,bg_prob,seq_profile )
+% This function returns a traditional expression for relative entropy.
+[~,npos] = size(nmsa);
+rel_entropy_aa = zeros(20,npos);
+
+for i = 1:npos
+    rel_entropy_aa(:,i) = ...
+        nantozero(...
+        seq_profile(:,i) .* ...
+        log(seq_profile(:,i)./bg_prob)...
+        );
+end
+
+rel_entropy = sum(rel_entropy_aa);
+
